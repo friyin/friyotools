@@ -16,6 +16,8 @@ If you specify dash - as input stdin will be used.
 
 Example: `cat domains.txt | ./domdata.py -i -`
 
+Result will be displayed to stdout showing new domains only.
+
 
 #### List domains from DB
 

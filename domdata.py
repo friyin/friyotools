@@ -119,8 +119,8 @@ def add_domains(new_domains):
 
 
 def list_domains():
-    print("%d domain(s) found" % len(domains))
-    print()
+    print("%d domain(s) found" % len(domains), file=sys.stderr)
+    print(file=sys.stderr)
     for domain in domains:
         print("%s" % domain)
 

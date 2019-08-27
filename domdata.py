@@ -94,16 +94,16 @@ def before_sub(str, sub):
 
 def filter_domain(domain):
     domain = domain.strip()
-    domain = after_sub(domain, "//")
-    domain = after_sub(domain, "/")
-    domain = after_sub(domain, "*.")
-    domain = after_sub(domain, "*")
-    domain = before_sub(domain, "/")
-    if domain.startswith('.'):
-        domain = domain[1:]
+    #domain = after_sub(domain, "//")
+    #domain = after_sub(domain, "/")
+    #domain = after_sub(domain, "*.")
+    #domain = after_sub(domain, "*")
+    #domain = before_sub(domain, "/")
+    #if domain.startswith('.'):
+    #    domain = domain[1:]
 
-    if domain.find('.') == -1:
-        return None
+    #if domain.find('.') == -1:
+    #    return None
 
     return domain
 
@@ -143,9 +143,10 @@ def handle_input(path):
     received_domains = set(filtered_domains)
 
     to_add_domains = received_domains.difference(domains)
-    to_add_domains.remove(None)
+    if None in to_add_domains:
+        to_add_domains.remove(None)
 
-    print("Detected %d new domain(s) to add" % len(to_add_domains))
+    print("Detected %d new domain(s) to add" % len(to_add_domains), file=sys.stderr)
 
     add_domains(to_add_domains)
 

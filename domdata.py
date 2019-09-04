@@ -158,26 +158,39 @@ def usage():
 def main():
     global domains, verbose
 
-    open_db()
-    init_db()
-    domains = fetch_domains()
+    database_path = None
+    input_path = None
+    list_domains_flag = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:vl", ["help", "input=", "list"])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:ld:", ["help", "input=", "list", "database="])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
         sys.exit(2)
+
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit(1)
         elif o in ("-i", "--input"):
-            handle_input(a)
+            input_path = a
+        elif o in ("-d", "--database"):
+            database_path = a
         elif o in ("-l", "--list"):
-            list_domains()
+            list_domains_flag = True
         else:
             assert False, "unhandled option"
+
+    open_db(path=database_path)
+    init_db()
+    domains = fetch_domains()
+
+    if input_path:
+        handle_input(input_path)
+
+    if list_domains_flag:
+        list_domains()
 
 
 if __name__ == "__main__":

@@ -10,18 +10,18 @@ Your tools for fun and profit.
 #### Import domains into DB
 
 
-Type `./domdata.py -i domains.txt` to import domains
+Type `./domdata.py -d newdomains.db -i domains.txt` to import domains
 
 If you specify dash - as input stdin will be used.
 
-Example: `cat domains.txt | ./domdata.py -i -`
+Example: `cat domains.txt | ./domdata.py -d newdomains.db -i -`
 
 Result will be displayed to stdout showing new domains only.
 
 
 #### List domains from DB
 
-To list domains in DB: `./domdata.py -l`
+To list domains in DB: `./domdata.py -l -d mydomains.db`
 
 At this moment not all details are dumped, you can use your favourite SQLite browser to see and modify stored data.
 

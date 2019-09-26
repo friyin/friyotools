@@ -46,7 +46,7 @@ def get_bucket_name(domain):
     url = 'https://%s/?AWSAccessKeyId=%s&Expires=1766972005&Signature=a' % (domain, aws_key)
 
     print("Trying:", url)
-    r = requests.get(url)
+    r = requests.get(url, timeout=5)
     body = r.text
 
     if r.status_code != 403:

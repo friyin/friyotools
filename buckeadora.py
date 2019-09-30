@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, requests, getopt, boto3, botocore
+import time
 from html.parser import HTMLParser
 
 from botocore.exceptions import ClientError
@@ -123,7 +124,13 @@ def usage():
 
 
 def process_data():
+    print("Processing data for %d URLs" % len(input_data))
+    start_time = time.time()
+    interrupted = False
     for domain_or_url in input_data:
+        if interrupted:
+            break
+
         try:
             url = url_creator_from_input(domain_or_url)
             bucket_name = get_bucket_name(url)
@@ -135,11 +142,17 @@ def process_data():
             if verbose_mode:
                 print("Detected bucket:", bucket_name)
             check_bucket_permissions(bucket_name)
-        except KeyboardInterrupt as ki:
-            raise ki
+        except KeyboardInterrupt:
+            print("Keyboard interrupted, exiting...")
+            interrupted = True
         except:
             if verbose_mode:
                 print("Can't connect to", domain_or_url)
+
+    elapsed_time = time.time() - start_time
+
+    print("Total time:", time.strftime("%M:%S", time.gmtime(elapsed_time)))
+
 
 
 def main():
@@ -177,6 +190,8 @@ def main():
         print("No domain specified")
         usage()
         sys.exit(4)
+
+    process_data()
 
 if __name__ == '__main__':
     main()

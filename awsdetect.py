@@ -23,7 +23,7 @@ def is_dom(victimDomain):
 #    except dns.resolver.NoAnswer:
 #        return True
     except dns.resolver.NoNameservers:
-        return True
+        return False
     except dns.resolver.NXDOMAIN:
         return True
     except exceptions_tuple:

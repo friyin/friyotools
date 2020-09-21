@@ -44,10 +44,12 @@ def main():
         sys.exit(1)
 
     org_slug = sl.slugify(organization)
+    #org_slug = 'oath_inc'
 
     page = 0
     count = 0
 
+    print(f"Searching {organization} ({org_slug})")
 
     while True:
         page += 1
@@ -56,8 +58,15 @@ def main():
         r = requests.get(url, timeout=10)
 
         data = json.loads(r.content.decode('utf-8'))
+        if len(data) == 1:
+            print(f"ERROR: Message: {data[0]['message']} Code: {data[0]['code']} Status {data[0]['status']}")
+            break
 
         total_items = data['data']['paging']['total_items']
+        if total_items == 0:
+            print("/No items found")
+            break
+
         if page == 1:
             print(f"Searching {organization}")
             print(f"Total items {total_items}")

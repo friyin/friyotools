@@ -3,7 +3,6 @@ import getopt
 import json
 import sys
 import requests
-import urllib3
 import slugify as sl
 
 
@@ -24,7 +23,6 @@ def banner():
 | |___| |  | |_| | | | | (__| | | | (_| |_|
  \____|_|   \__,_|_| |_|\___|_| |_|\__,_(_)
                                by friyin""")
-
     print()
 
 
@@ -103,7 +101,6 @@ def main():
             properties = item['properties']
             acquiree = item['relationships']['acquiree']['properties']
 
-
             if urls_only:
                 if acquiree['homepage_url']:
                     print(acquiree['homepage_url'])
@@ -124,9 +121,5 @@ def main():
                 print()
 
 
-
-
 if __name__ == '__main__':
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
     main()

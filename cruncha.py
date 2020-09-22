@@ -7,11 +7,11 @@ import slugify as sl
 
 
 def usage():
-        print("Usage {argv[0]} -k key -o organization [-u]")
-        print("      -k user_key")
-        print("      -o organization to search")
-        print("      -u (Optional) Show URLs only")
-        print("      -r <number> (Optional) Recursion level (0=infinte) (Use with care!)")
+        print("Usage: {argv[0]} -k key -o organization [-u] [-r level]")
+        print("       -k user_key")
+        print("       -o organization to search")
+        print("       -u (Optional) Show URLs only")
+        print("       -r <number> (Optional) Recursion level (0=infinte) (Use with care!)")
         print()
         print(f"Example: {sys.argv[0]} -k 4579384534 -o yahoo")
         print()

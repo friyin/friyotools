@@ -7,7 +7,16 @@ import urllib3
 import slugify as sl
 
 
-def main():
+def usage():
+        banner()
+        print("Usage {argv[0]} -k key -o organization [-u]")
+        print("      -k user_key")
+        print("      -o organization to search")
+        print("      -u (Optional) Show URLs only")
+        print(f"Example: {sys.argv[0]} -k 4579384534 -o yahoo")
+
+
+def banner():
     print("""
   ____                       _           _ 
  / ___|_ __ _   _ _ __   ___| |__   __ _| |
@@ -15,16 +24,20 @@ def main():
 | |___| |  | |_| | | | | (__| | | | (_| |_|
  \____|_|   \__,_|_| |_|\___|_| |_|\__,_(_)
                                by friyin""")
+
     print()
 
+
+def main():
     user_key = None
     organization = None
+    urls_only = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "k:o:", ["key=", "organization="])
+        opts, args = getopt.getopt(sys.argv[1:], "k:o:u", ["key=", "organization=", "urls-only"])
     except getopt.GetoptError as err:
         print(str(err))
-        print("Usage {argv[0]} -k key -o organization")
+        usage()
         sys.exit(1)
 
     for o, a in opts:
@@ -32,15 +45,19 @@ def main():
             user_key = a
         elif o in ("-o", "--organization"):
             organization = a
+        elif o in ("-u", "--urls-only"):
+            urls_only = True
         else:
             assert False, "unhandled option"
 
     if not user_key:
         print("Missing user key")
+        usage()
         sys.exit(1)
 
     if not organization:
         print("Missing organization")
+        usage()
         sys.exit(1)
 
     org_slug = sl.slugify(organization)
@@ -49,7 +66,9 @@ def main():
     page = 0
     count = 0
 
-    print(f"Searching {organization} ({org_slug})")
+    if not urls_only:
+        banner()
+        print(f"Searching {organization} ({org_slug})")
 
     while True:
         page += 1
@@ -67,37 +86,42 @@ def main():
             print("/No items found")
             break
 
-        if page == 1:
+        if not urls_only and page == 1:
             print(f"Searching {organization}")
             print(f"Total items {total_items}")
 
         items = data['data']['items']
 
-        if len(items) == 0:
-            print("/End of search")
+        if not len(items):
+            if not urls_only:
+                print("/End of search")
             break
 
         for item in items:
             count += 1
             uuid = item['uuid']
-
-            print(f"Item #{count}")
-            print()
-            print(f" - Type: {item['type']}")
-            print(f" - UUID: {uuid}")
             properties = item['properties']
             acquiree = item['relationships']['acquiree']['properties']
-            print(f" - Acquisition Type: {properties['acquisition_type']}")
-            print(f" - Acquisition Status: {properties['acquisition_status']}")
-            print(f" - Acquiree Name: {acquiree['name']}")
-            print(f" - Acquiree Description: {acquiree['short_description']}")
-            if acquiree['founded_on']:
-                print(f" - Acquiree Founded on: {acquiree['founded_on']}")
-            if acquiree['homepage_url']:
-                print(f" - Acquiree Homepage URL: {acquiree['homepage_url']}")
 
-            print()
-            print()
+
+            if urls_only:
+                if acquiree['homepage_url']:
+                    print(acquiree['homepage_url'])
+            else:
+                print(f"Item #{count}")
+                print()
+                print(f" - Type: {item['type']}")
+                print(f" - UUID: {uuid}")
+                print(f" - Acquisition Type: {properties['acquisition_type']}")
+                print(f" - Acquisition Status: {properties['acquisition_status']}")
+                print(f" - Acquiree Name: {acquiree['name']}")
+                print(f" - Acquiree Description: {acquiree['short_description']}")
+                if acquiree['founded_on']:
+                    print(f" - Acquiree Founded on: {acquiree['founded_on']}")
+                if acquiree['homepage_url']:
+                    print(f" - Acquiree Homepage URL: {acquiree['homepage_url']}")
+                print()
+                print()
 
 
 

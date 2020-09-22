@@ -11,7 +11,9 @@ def usage():
         print("      -k user_key")
         print("      -o organization to search")
         print("      -u (Optional) Show URLs only")
+        print()
         print(f"Example: {sys.argv[0]} -k 4579384534 -o yahoo")
+        print()
 
 
 def banner():

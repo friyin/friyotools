@@ -7,7 +7,6 @@ import slugify as sl
 
 
 def usage():
-        banner()
         print("Usage {argv[0]} -k key -o organization [-u]")
         print("      -k user_key")
         print("      -o organization to search")
@@ -49,12 +48,16 @@ def main():
             assert False, "unhandled option"
 
     if not user_key:
-        print("Missing user key")
+        banner()
+        print("ERROR: Missing user key (use -k)")
+        print()
         usage()
         sys.exit(1)
 
     if not organization:
-        print("Missing organization")
+        banner()
+        print("ERROR: Missing organization (use -o)")
+        print()
         usage()
         sys.exit(1)
 

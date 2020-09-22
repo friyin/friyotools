@@ -11,6 +11,7 @@ def usage():
         print("      -k user_key")
         print("      -o organization to search")
         print("      -u (Optional) Show URLs only")
+        print("      -r <number> (Optional) Recursion level (0=infinte) (Use with care!)")
         print()
         print(f"Example: {sys.argv[0]} -k 4579384534 -o yahoo")
         print()
@@ -27,104 +28,121 @@ def banner():
     print()
 
 
-def main():
-    user_key = None
-    organization = None
-    urls_only = False
+class Cruncha:
+    def __init__(self):
+        self.user_key = None
+        self.organization = None
+        self.urls_only = False
+        self.recursion_level = -1
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "k:o:u", ["key=", "organization=", "urls-only"])
-    except getopt.GetoptError as err:
-        print(str(err))
-        usage()
-        sys.exit(1)
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "k:o:ur:", ["key=", "organization=", "urls-only", "recursion-level="])
+        except getopt.GetoptError as err:
+            print(str(err))
+            usage()
+            sys.exit(1)
 
-    for o, a in opts:
-        if o in ("-k", "--key"):
-            user_key = a
-        elif o in ("-o", "--organization"):
-            organization = a
-        elif o in ("-u", "--urls-only"):
-            urls_only = True
-        else:
-            assert False, "unhandled option"
+        for o, a in opts:
+            if o in ("-k", "--key"):
+                self.user_key = a
+            elif o in ("-o", "--organization"):
+                self.organization = a
+            elif o in ("-u", "--urls-only"):
+                self.urls_only = True
+            elif o in ("-r", "--recursion-level"):
+                self.recursion_level = int(a)
 
-    if not user_key:
-        banner()
-        print("ERROR: Missing user key (use -k)")
-        print()
-        usage()
-        sys.exit(1)
+    def _get_v31_organizations_relationship(self, permalink, relationship, page=1):
 
-    if not organization:
-        banner()
-        print("ERROR: Missing organization (use -o)")
-        print()
-        usage()
-        sys.exit(1)
+        return f"https://api.crunchbase.com/v3.1/organizations/{permalink}/{relationship}?page={page}&user_key={self.user_key}"
 
-    org_slug = sl.slugify(organization)
-    #org_slug = 'oath_inc'
 
-    page = 0
-    count = 0
+    def execute(self):
+        if not self.user_key:
+            banner()
+            print("ERROR: Missing user key (use -k)")
+            print()
+            usage()
+            sys.exit(1)
 
-    if not urls_only:
-        banner()
-        print(f"Searching {organization} ({org_slug})")
+        if not self.organization:
+            banner()
+            print("ERROR: Missing organization (use -o)")
+            print()
+            usage()
+            sys.exit(1)
 
-    while True:
-        page += 1
-        url = f"https://api.crunchbase.com/v/3/organizations/{org_slug}/acquisitions?page={page}&user_key={user_key}"
 
-        r = requests.get(url, timeout=10)
+        if not self.urls_only:
+            banner()
+            print(f"Searching {self.organization}")
 
-        data = json.loads(r.content.decode('utf-8'))
-        if len(data) == 1:
-            print(f"ERROR: Message: {data[0]['message']} Code: {data[0]['code']} Status {data[0]['status']}")
-            break
+        permalink = sl.slugify(self.organization)
+        self._get_acquisitions_by_org(permalink, rec=0)
 
-        total_items = data['data']['paging']['total_items']
-        if total_items == 0:
-            print("/No items found")
-            break
 
-        if not urls_only and page == 1:
-            print(f"Searching {organization}")
-            print(f"Total items {total_items}")
+    def _get_acquisitions_by_org(self, parent_permalink, rec=0):
+        if self.recursion_level > 0 and rec > self.recursion_level:
+            return
 
-        items = data['data']['items']
+        count = 0
+        page = 0
 
-        if not len(items):
-            if not urls_only:
-                print("/End of search")
-            break
+        while True:
+            page += 1
+            url = self._get_v31_organizations_relationship(parent_permalink, 'acquisitions', page)
 
-        for item in items:
-            count += 1
-            uuid = item['uuid']
-            properties = item['properties']
-            acquiree = item['relationships']['acquiree']['properties']
+            r = requests.get(url, timeout=10)
 
-            if urls_only:
-                if acquiree['homepage_url']:
-                    print(acquiree['homepage_url'])
-            else:
-                print(f"Item #{count}")
-                print()
-                print(f" - Type: {item['type']}")
-                print(f" - UUID: {uuid}")
-                print(f" - Acquisition Type: {properties['acquisition_type']}")
-                print(f" - Acquisition Status: {properties['acquisition_status']}")
-                print(f" - Acquiree Name: {acquiree['name']}")
-                print(f" - Acquiree Description: {acquiree['short_description']}")
-                if acquiree['founded_on']:
-                    print(f" - Acquiree Founded on: {acquiree['founded_on']}")
-                if acquiree['homepage_url']:
-                    print(f" - Acquiree Homepage URL: {acquiree['homepage_url']}")
-                print()
-                print()
+            data = json.loads(r.content.decode('utf-8'))
+            if len(data) == 1:
+                print(f"ERROR: Message: {data[0]['message']} Code: {data[0]['code']} Status {data[0]['status']}")
+                break
+
+            total_items = data['data']['paging']['total_items']
+            if total_items == 0:
+                if not self.urls_only:
+                    print("/No items found")
+                break
+
+            if not self.urls_only and page == 1:
+                print(f"Searching {parent_permalink} Total items: {total_items} Recursion level: {rec}")
+
+            items = data['data']['items']
+
+            if not len(items):
+                if not self.urls_only:
+                    print("/End of search")
+                break
+
+            for item in items:
+                count += 1
+                item_uuid = item['uuid']
+                properties = item['properties']
+                acquiree = item['relationships']['acquiree']['properties']
+
+                if self.urls_only:
+                    if acquiree['homepage_url']:
+                        print(acquiree['homepage_url'])
+                else:
+                    print(f"Item #{count} (Recursion level: {rec})")
+                    print(f" - Type: {item['type']}")
+                    print(f" - UUID: {item_uuid}")
+                    print(f" - Acquisition Type: {properties['acquisition_type']}")
+                    print(f" - Acquisition Status: {properties['acquisition_status']}")
+                    print(f" - Acquiree Name: {acquiree['name']}")
+                    print(f" - Acquiree Description: {acquiree['short_description']}")
+                    if acquiree['founded_on']:
+                        print(f" - Acquiree Founded on: {acquiree['founded_on']}")
+                    if acquiree['homepage_url']:
+                        print(f" - Acquiree Homepage URL: {acquiree['homepage_url']}")
+                    print()
+                    print()
+
+                if self.recursion_level >= 0:
+                    self._get_acquisitions_by_org(acquiree['permalink'], rec + 1)
 
 
 if __name__ == '__main__':
-    main()
+    c = Cruncha()
+    c.execute()

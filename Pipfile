@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-requests = "==2.22.0"
+requests = "==2.31.0"
 boto3 = "==1.10.45"
 botocore = "==1.13.45"
 certifi = "==2022.12.7"

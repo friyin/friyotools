@@ -1,3 +1,6 @@
 domains.db
 .idea
 with_bounties.txt
+.jython_cache/
+temp/
+test.xml
